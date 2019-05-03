@@ -31,6 +31,3 @@ for tag in liveTag:
 # change "urls" to "times" or "titles" to loop through a different list 
 #for i in urls:
 #    print(i)
-
-
-#testing comment

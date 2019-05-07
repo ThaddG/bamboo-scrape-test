@@ -40,8 +40,10 @@ for tag in liveTag:
 ==========================="""
 
 scope = ["https://spreadsheets.google.com/feeds","https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
+# replace the json file with personal credentials file
 creds = ServiceAccountCredentials.from_json_keyfile_name("test-sheets-creds.json", scope)
 client = gspread.authorize(creds)
+# replace "test-sheet" with personal google sheet file
 sheet = client.open("test-sheet").sheet1
 data = sheet.get_all_records()
 

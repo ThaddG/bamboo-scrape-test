@@ -1,6 +1,7 @@
 from apiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 import pickle
+import os.path
 
 from datetime import datetime, timedelta
 import datefinder
@@ -48,15 +49,23 @@ for tag in liveTag:
 
 scopes = ['https://www.googleapis.com/auth/calendar']
 flow = InstalledAppFlow.from_client_secrets_file("client_secret.json", scopes=scopes)
-# not needed after first run
-# make a check to see if there isnt credentials yet
-# maybe if credentials == None
-credentials = flow.run_console()
-# dump the credentials obj that holds the credentials into a pickle file
-pickle.dump(credentials, open("token.pkl", "wb"))
+
+if os.path.exists('token.pkl'):
+        with open('token.pkl', 'rb') as token:
+            credentials = pickle.load(token)
+else:
+      # not needed after first run
+      # make a check to see if there isnt credentials yet
+      # maybe if credentials == None
+      credentials = flow.run_console()
+      # dump the credentials obj that holds the credentials into a pickle file
+      pickle.dump(credentials, open("token.pkl", "wb"))
+      
+
+
 # load the credentials so it doesnt have to request permission again
 # this will most likely need an if statement
-credentials = pickle.load(open("token.pkl", "rb"))
+#credentials = pickle.load(open("token.pkl", "rb"))
 # build the calendar api
 service = build("calendar", "v3", credentials=credentials)
 
@@ -94,4 +103,4 @@ def create_event(start_time_str, summary, duration=1, description=None, location
       return service.events().insert(calendarId='primary', body=event).execute()
 
 
-# create_event("9 june 6 PM", "Test Using Function")
+create_event("7 june 6 PM", "Another Test Using Function")

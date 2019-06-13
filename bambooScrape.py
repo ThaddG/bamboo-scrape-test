@@ -22,17 +22,40 @@ else:
       credentials = flow.run_console()
       # dump the credentials obj that holds the credentials into a pickle file
       pickle.dump(credentials, open("token.pkl", "wb"))
-      
-# load the credentials so it doesnt have to request permission again
-# this will most likely need an if statement
-#credentials = pickle.load(open("token.pkl", "rb"))
+
 # build the calendar api
 service = build("calendar", "v3", credentials=credentials)
 
 calendarResult = service.calendarList().list().execute()
-calendar_id = calendarResult['items'][0]['id']
 
-print(calendar_id)
+"""======================================
+  CHECK IF CALENDAR ALREADY EXISTS
+======================================"""
+### Turn this into a function later
+## Check if 'Bamboo Events' calendar has already been made, this is in case the code has been ran before
+# this avoids making multiple calendars
+calendarIsInList = False
+calendarListNumber = 999
+for i in range(len(calendarResult['items'])):
+    if 'Bamboo Events' in calendarResult['items'][i]['summary']:
+        calendarIsInList = True
+        calendarListNumber = i;
+        break
+    else:
+          calendarIsIn = False
+
+if calendarIsInList == False:
+    bambooCalendar = {
+        'summary': 'Bamboo Events',
+        'timeZone': 'America/Detroit'
+    }
+    created_calendar = service.calendars().insert(body=bambooCalendar).execute()
+"""======================================
+  END CALENDAR EXISTENCE CHECK
+======================================"""
+
+# save the calendar id in a variable
+calendar_id = calendarResult['items'][calendarListNumber]['id']
 
 calendarResult = service.events().list(calendarId=calendar_id).execute()
 
@@ -63,7 +86,9 @@ def create_event(start_time_str, summary, duration=1, description=None, location
             ],
           },
         }
-      return service.events().insert(calendarId='primary', body=event).execute()
+      # set calendarId='primary' to create events to calendar tied to google acc
+      # set calendarId to the id found on line 33 from the list of calendars to use a custom calendar
+      return service.events().insert(calendarId=calendar_id, body=event).execute()
 
 
 """======================================
@@ -79,8 +104,8 @@ urls = [] # hold the event links
 
 
 liveTag = soup.find_all("article", {"id": "live_events"}) #store the live events div
-# step inside the live events article
-# in the form of a loop to get inside the article but will only loop once
+# step inside the live events article...
+# in the form of a loop to get inside the article but will only loop once...
 # since there is only one live_events article
 for tag in liveTag:
     listCards = tag.find_all("div", {"class": "list-card-v2"}) #store the live cards
@@ -94,20 +119,12 @@ for tag in liveTag:
         ### LINKS ###
         a = card.find('a')
         urls.append(a.attrs['href'])
-
-# create the events
-for i in range(len(titles)):
-      create_event(times[i], titles[i])
-
-# uncomment to print the links
-# change "urls" to "times" or "titles" to loop through a different list 
-#for i in urls:
-#    print(i)
 """======================================
   SCRAPED INFO
 ======================================"""
 
+# create the events
+for i in range(len(titles)):
+    create_event(times[i], titles[i], 1, urls[i])
 
-
-
-#create_event("7 june 6 PM", "Another Test Using Function")
+#create_event("20 june 6 PM", "Another Test Using Function")

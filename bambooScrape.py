@@ -35,14 +35,13 @@ calendarResult = service.calendarList().list().execute()
 ## Check if 'Bamboo Events' calendar has already been made, this is in case the code has been ran before
 # this avoids making multiple calendars
 calendarIsInList = False
-calendarListNumber = 999
 for i in range(len(calendarResult['items'])):
     if 'Bamboo Events' in calendarResult['items'][i]['summary']:
         calendarIsInList = True
-        calendarListNumber = i
+        calendar_id = calendarResult['items'][i]['id']
         break
     else:
-          calendarIsIn = False
+        calendarIsInList = False
 
 if calendarIsInList == False:
     bambooCalendar = {
@@ -50,18 +49,10 @@ if calendarIsInList == False:
         'timeZone': 'America/Detroit'
     }
     created_calendar = service.calendars().insert(body=bambooCalendar).execute()
-
-    # get the calendar's list number if it was just created
-    for i in range( len(calendarResult['items']) ):
-          if 'Bamboo Events' in calendarResult['items'][i]['summary']:
-                calendarListNumber = i
-                break;
+    calendar_id = created_calendar['id']
 """======================================
   END CALENDAR EXISTENCE CHECK
 ======================================"""
-
-# save the calendar id in a variable
-calendar_id = calendarResult['items'][calendarListNumber]['id']
 
 calendarResult = service.events().list(calendarId=calendar_id).execute()
 
@@ -129,7 +120,7 @@ for tag in liveTag:
   END SCRAPED INFO
 ======================================"""
 
-addEventToCalendar = False
+addEventToCalendar = True
 for i in range(len(titles)): #loop the amount of times equal to the number of scraped live events
   ### loop through all of the current events and check for url matches (not definite).
   page_token = None
